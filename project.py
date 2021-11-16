@@ -30,7 +30,7 @@ df.groupBy('repo').count().orderBy('count', ascending=False).show(n=10)
 
 # 2. Afficher dans la console le plus gros contributeur (la personne qui a fait le plus de commit) du projet apache/spark.
 
-df.filter(df.repo == 'apache/spark').groupBy('author').count().orderBy('count', ascending=False).show(n=1)
+df.filter(df.repo == 'apache/spark').groupBy('author').count().orderBy('count', ascending=False).first()
 
 # Output:
 # Row(author='Matei Zaharia <matei@eecs.berkeley.edu>', count=683)
