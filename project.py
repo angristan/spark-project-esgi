@@ -1,4 +1,7 @@
+import datetime
+
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 
 spark = SparkSession \
     .builder \
@@ -34,3 +37,15 @@ df.filter(df.repo == 'apache/spark').groupBy('author').count().orderBy('count', 
 
 # Output:
 # Row(author='Matei Zaharia <matei@eecs.berkeley.edu>', count=683)
+
+# 3. Afficher dans la console les plus gros contributeurs du projet apache/spark sur les 6 derniers mois.
+
+# Enable use of 'E' in time format
+spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
+
+df2 = df.withColumn("timestamp", unix_timestamp(col("date"), "EEE MMM dd HH:mm:ss yyyy Z")).cast("timestamp").filter(df.repo == 'apache/spark')
+six_months_ago = datetime.datetime.now() - datetime.timedelta(days=180)
+df2.filter(df2["timestamp"] >= six_months_ago.strftime('%Y-%m-%d %H:%M:%S')).groupBy('author').count().orderBy('count', ascending=False).show()
+
+# Output:
+# nothing because the dataset is outdated.
