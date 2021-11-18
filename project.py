@@ -43,9 +43,9 @@ df.filter(df.repo == 'apache/spark').groupBy('author').count().orderBy('count', 
 # Enable use of 'E' in time format
 spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
 
-df2 = df.withColumn("timestamp", unix_timestamp(col("date"), "EEE MMM dd HH:mm:ss yyyy Z")).cast("timestamp").filter(df.repo == 'apache/spark')
+df_dates = df.withColumn("timestamp", unix_timestamp(col("date"), "EEE MMM dd HH:mm:ss yyyy Z")).cast("timestamp")
 six_months_ago = datetime.datetime.now() - datetime.timedelta(days=180)
-df2.filter(df2["timestamp"] >= six_months_ago.strftime('%Y-%m-%d %H:%M:%S')).groupBy('author').count().orderBy('count', ascending=False).show()
+df_dates.filter(df.repo == 'apache/spark').filter(df_dates["timestamp"] >= six_months_ago.strftime('%Y-%m-%d %H:%M:%S')).groupBy('author').count().orderBy('count', ascending=False).show()
 
 # Output:
 # nothing because the dataset is outdated.
