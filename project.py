@@ -3,6 +3,7 @@ import datetime
 from pyspark.ml.feature import StopWordsRemover, Tokenizer
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.storagelevel import StorageLevel
 
 spark = SparkSession \
     .builder \
@@ -12,12 +13,17 @@ spark = SparkSession \
 
 df = spark.read.option("header", True).csv('full.csv')
 
+# remove all rows that have null values on any column
+df = df.na.drop()
+
+# Persists the DataFrame with the default storage level (MEMORY_AND_DISK)
+df.cache()
+
 # 1. Afficher dans la console les 10 projets Github pour lesquels il y a eu le plus de commit.
 
 df.groupBy('repo') \
     .count() \
     .orderBy('count', ascending=False) \
-    .na.drop() \
     .show(n=10)
 
 # Output:
@@ -42,7 +48,7 @@ df.filter(df.repo == 'apache/spark') \
     .groupBy('author') \
     .count() \
     .orderBy('count', ascending=False) \
-    .first()
+    .show(n=1)
 
 # Output:
 # Row(author='Matei Zaharia <matei@eecs.berkeley.edu>', count=683)
@@ -66,12 +72,10 @@ df_dates.filter(df.repo == 'apache/spark') \
 
 # 4. Afficher dans la console les 10 mots qui reviennent le plus dans les messages de commit sur l’ensemble des projets.
 
-# remove all rows that have null values on any column
-df_no_null = df.na.drop()
 
 # tokenzie the commit message column
 tokenizer = Tokenizer(inputCol="message", outputCol="words_token")
-tokenized = tokenizer.transform(df_no_null).select('words_token')
+tokenized = tokenizer.transform(df).select('words_token')
 
 # remove stop words from the tokenized column
 remover = StopWordsRemover(inputCol='words_token', outputCol='words_clean')
