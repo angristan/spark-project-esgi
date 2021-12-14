@@ -17,23 +17,24 @@ df = spark.read.option("header", True).csv('full.csv')
 df.groupBy('repo') \
     .count() \
     .orderBy('count', ascending=False) \
+    .na.drop() \
     .show(n=10)
 
 # Output:
-# +--------------------+--------+
-# |                repo|   count|
-# +--------------------+--------+
-# |                null|31631188|
-# |         openbsd/src|  103906|
-# |      rust-lang/rust|   77696|
-# |    microsoft/vscode|   65518|
-# | freebsd/freebsd-src|   64103|
-# |      python/cpython|   63910|
-# |         apple/swift|   45756|
-# |kubernetes/kubern...|   41480|
-# |     rstudio/rstudio|   29384|
-# |       opencv/opencv|   25772|
-# +--------------------+--------+
+# +--------------------+------+
+# |                repo| count|
+# +--------------------+------+
+# |         openbsd/src|103906|
+# |      rust-lang/rust| 77696|
+# |    microsoft/vscode| 65518|
+# | freebsd/freebsd-src| 64103|
+# |      python/cpython| 63910|
+# |         apple/swift| 45756|
+# |kubernetes/kubern...| 41480|
+# |     rstudio/rstudio| 29384|
+# |       opencv/opencv| 25772|
+# |microsoft/TypeScript| 22017|
+# +--------------------+------+
 
 # 2. Afficher dans la console le plus gros contributeur (la personne qui a fait le plus de commit) du projet apache/spark.
 
