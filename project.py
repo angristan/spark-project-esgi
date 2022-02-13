@@ -1,4 +1,5 @@
 import datetime
+import time
 
 from pyspark.ml.feature import StopWordsRemover, Tokenizer
 from pyspark.sql import SparkSession
@@ -112,3 +113,6 @@ result.filter(result.word != '').show(n=10)
 # |remote-tracking|21173|
 # |          tests|19183|
 # +---------------+-----+
+
+# time.sleep(9999999)
+# http://localhost:4040/jobs/
