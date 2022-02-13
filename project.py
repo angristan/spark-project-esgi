@@ -3,7 +3,6 @@ import datetime
 from pyspark.ml.feature import StopWordsRemover, Tokenizer
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-from pyspark.storagelevel import StorageLevel
 
 spark = SparkSession \
     .builder \
@@ -11,15 +10,21 @@ spark = SparkSession \
     .master("local[*]") \
     .getOrCreate()
 
+# Read CSV with header
 df = spark.read.option("header", True).csv('full.csv')
 
-# remove all rows that have null values on any column
+# Remove all rows that have null values on any column
 df = df.na.drop()
 
 # Persists the DataFrame with the default storage level (MEMORY_AND_DISK)
 df.cache()
 
-# 1. Afficher dans la console les 10 projets Github pour lesquels il y a eu le plus de commit.
+# Run duration
+# 2min 24s with cache
+# 5min 14s without cache
+
+
+# Question 1 : Afficher dans la console les 10 projets Github pour lesquels il y a eu le plus de commit.
 
 df.groupBy('repo') \
     .count() \
@@ -68,17 +73,18 @@ df_dates.filter(df.repo == 'apache/spark') \
     .show()
 
 # Output:
-# nothing because the dataset is outdated.
+# nothing because the dataset is outdated, but it works over a bigger time range
 
 # 4. Afficher dans la console les 10 mots qui reviennent le plus dans les messages de commit sur l’ensemble des projets.
 
 
-# tokenzie the commit message column
+# tokenzie the commit message column (converts the input string to lowercase and then splits it by white spaces)
 tokenizer = Tokenizer(inputCol="message", outputCol="words_token")
 tokenized = tokenizer.transform(df).select('words_token')
 
-# remove stop words from the tokenized column
+# remove stop words from the tokenized column, using the default spark stop words in multiple languages
 remover = StopWordsRemover(inputCol='words_token', outputCol='words_clean')
+
 # remove empty words
 data_clean = remover.transform(tokenized) \
     .select('words_clean') \
@@ -89,7 +95,7 @@ result = data_clean.withColumn('word', explode(col('words_clean'))) \
     .count() \
     .sort('count', ascending=False)
 
-result.filter(result.word != '').show()
+result.filter(result.word != '').show(n=10)
 
 # Output:
 # +---------------+-----+
